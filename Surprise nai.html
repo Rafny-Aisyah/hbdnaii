@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Happy Birthday</title>
+
+<style>
+body{
+    margin:0;
+    background:black;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+    overflow:hidden;
+}
+
+/* BACKGROUND BINTANG */
+#stars{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:-1;
+}
+
+/* AUDIO BAR */
+#audioBox{
+    margin-top:40px;
+}
+
+#introText{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:28px;
+    text-align:center;
+    opacity:0;
+    transition:1.5s;
+    pointer-events:none;
+}
+
+/* POLAROID */
+#photoBox{
+    opacity:0;
+    transition:2s;
+    margin-top:40px;
+}
+
+.polaroid{
+    background:skyblue;
+    padding:15px 15px 40px 15px;
+    display:inline-block;
+    border-radius:6px;
+    box-shadow:0 10px 25px rgba(255, 254, 254, 0.73);
+}
+
+.polaroid img{
+    width:250px;
+}
+
+/* TYPING */
+#typing{
+    margin-top:20px;
+    font-size:22px;
+    white-space:pre-wrap;
+}
+
+.fadeout{
+    opacity:0 !important;
+}
+
+/* CONFETTI */
+#confetti{
+    position:fixed;
+    top:0;
+    left:0;
+    pointer-events:none;
+}
+
+#finalBtn{
+    display:none;
+    margin-top:30px;
+    padding:12px 25px;
+    font-size:18px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="stars"></canvas>
+<canvas id="confetti"></canvas>
+
+<div id="audioBox">
+<audio id="music" controls>
+    <source src="Multo.mp3" type="audio/mpeg">
+</audio>
+</div>
+
+<div id="introText"></div>
+
+<div id="photoBox">
+    <div class="polaroid">
+        <img src="temann.jpeg">
+    </div>
+    <div id="typing"></div>
+</div>
+
+<button id="finalBtn">apa nih?</button>
+
+<script>
+const music = document.getElementById("music");
+const photoBox = document.getElementById("photoBox");
+const introText = document.getElementById("introText");
+
+const introMessage =
+"1 MARET 2006.\n" + 
+"tepatnya 20 tahun lalu, kamu lahir di dunia ini.\n" +
+"aku gabisa ngasih hadiah atau surprise yang 'wah'\n" + 
+"but...";
+let photoShown = false;
+
+/* ======================
+   SIAPKAN AUDIO DI 2:13
+====================== */
+music.addEventListener("loadedmetadata", () => {
+    music.currentTime = 133; // 2:13
+});
+
+/* ======================
+   SAAT AUDIO DIPLAY
+====================== */
+music.addEventListener("timeupdate", () => {
+
+    let t = music.currentTime;
+
+    // TEKS PEMBUKA muncul di awal lagu
+    if(t >= 135 && t < 152){
+        introText.style.opacity = 1;
+        introText.innerText = introMessage;
+    }
+
+    // FOTO muncul di 2:32
+    if(t >= 152 && !photoShown){
+
+        introText.style.opacity = 0; // teks hilang dulu
+
+        photoBox.style.opacity = 1;
+        typeText(message);
+        createShootingStar();
+
+        photoShown = true;
+    }
+
+    // STOP DI 2:49
+    if(t >= 174){
+        music.pause();
+        finalBtn.style.display = "inline-block";
+    }
+
+});
+
+/* ======================
+   TYPING TEXT
+====================== */
+const message=
+"Selamat ulang tahun naii!\n"+
+"Terima kasih mau menjadi teman aku✨\n"+
+"apapun yang terjadi, doa yang terbaik untuk kamu.\n" +
+"tetap semangat ya! love you <3!";
+
+function typeText(text,i=0){
+    if(i<text.length){
+        typing.textContent+=text.charAt(i);
+        setTimeout(()=>typeText(text,i+1),50);
+    }
+}
+
+/* ======================
+   STAR BACKGROUND
+====================== */
+const starCanvas=document.getElementById("stars");
+const starCtx=starCanvas.getContext("2d");
+starCanvas.width=window.innerWidth;
+starCanvas.height=window.innerHeight;
+
+let stars=[];
+for(let i=0;i<200;i++){
+    stars.push({
+        x:Math.random()*starCanvas.width,
+        y:Math.random()*starCanvas.height,
+        size:Math.random()*2,
+        speed:Math.random()*0.5+0.2
+    });
+}
+
+/* SHOOTING STAR */
+let shootingStar=null;
+
+function createShootingStar(){
+    shootingStar = {
+        x: Math.random() * starCanvas.width,
+        y: Math.random() * (starCanvas.height/2),
+        length: 350,
+        speed: 14,
+        opacity: 1,
+        thickness: 2 + Math.random()*2
+    };
+}
+
+function animateStars(){
+    starCtx.clearRect(0,0,starCanvas.width,starCanvas.height);
+    starCtx.fillStyle="white";
+
+    stars.forEach(s=>{
+        s.y+=s.speed;
+        if(s.y>starCanvas.height){
+            s.y=0;
+            s.x=Math.random()*starCanvas.width;
+        }
+        starCtx.beginPath();
+        starCtx.arc(s.x,s.y,s.size,0,Math.PI*2);
+        starCtx.fill();
+    });
+
+    if(shootingStar){
+
+    let grad = starCtx.createLinearGradient(
+        shootingStar.x,
+        shootingStar.y,
+        shootingStar.x - shootingStar.length,
+        shootingStar.y + shootingStar.length/2
+    );
+
+    grad.addColorStop(0,"rgba(255,255,255,1)");
+    grad.addColorStop(1,"rgba(255,255,255,0)");
+
+    starCtx.strokeStyle = grad;
+    starCtx.lineWidth = shootingStar.thickness;
+    starCtx.shadowBlur = 20;
+    starCtx.shadowColor = "white";
+    starCtx.globalAlpha = shootingStar.opacity;
+
+    starCtx.beginPath();
+    starCtx.moveTo(shootingStar.x, shootingStar.y);
+    starCtx.lineTo(
+        shootingStar.x - shootingStar.length,
+        shootingStar.y + shootingStar.length/2
+    );
+    starCtx.stroke();
+
+    shootingStar.x += shootingStar.speed;
+    shootingStar.y += shootingStar.speed/2;
+    shootingStar.opacity -= 0.015;
+
+    if(shootingStar.opacity <= 0){
+        shootingStar = null;
+        starCtx.shadowBlur = 0;
+        starCtx.globalAlpha = 1;
+    }
+}
+    requestAnimationFrame(animateStars);
+}
+animateStars();
+
+/* ======================
+   CONFETTI + WARNING
+====================== */
+const confCanvas=document.getElementById("confetti");
+const confCtx=confCanvas.getContext("2d");
+confCanvas.width=window.innerWidth;
+confCanvas.height=window.innerHeight;
+
+let confs=[];
+
+function createConfetti(){
+    const colors = ["#ff4d6d","#ffd166","#06d6a0","#118ab2","#ffffff"];
+
+    confs = [];
+
+    for(let i=0;i<180;i++){
+        confs.push({
+            x: Math.random()*confCanvas.width,
+            y: -20,
+            size: 6 + Math.random()*6,
+            speedY: 2 + Math.random()*3,
+            speedX: Math.random()*2-1,
+            rotation: Math.random()*360,
+            rotateSpeed: Math.random()*10,
+            color: colors[Math.floor(Math.random()*colors.length)]
+        });
+    }
+}
+
+function drawConfetti(){
+    confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);
+
+    confs.forEach(c=>{
+        confCtx.save();
+
+        confCtx.translate(c.x,c.y);
+        confCtx.rotate(c.rotation*Math.PI/180);
+
+        confCtx.fillStyle=c.color;
+        confCtx.fillRect(-c.size/2,-c.size/2,c.size,c.size);
+
+        confCtx.restore();
+
+        c.y += c.speedY;
+        c.x += c.speedX;
+        c.rotation += c.rotateSpeed;
+
+        if(c.y > confCanvas.height){
+            c.y = -20;
+        }
+    });
+
+    requestAnimationFrame(drawConfetti);
+}
+
+finalBtn.onclick=()=>{
+    createConfetti();
+    drawConfetti();
+    alert("cie kepala dua, ditunggu undangannya WKWKWKWK\n cepet pulang yh, mwah^3^");
+};
+</script>
+
+</body>
+</html>
